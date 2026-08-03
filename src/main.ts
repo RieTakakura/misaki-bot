@@ -3,7 +3,7 @@
 type ChatMsg = { role: "system" | "user" | "assistant"; content: string };
 
 export default {
-  run: async (metadata: any) => {
+  run: async (_metadata: any) => {
     const apiKey = (WA.room.hashParameters.difyApiKey as string) ?? "";
     const baseUrl =
       (WA.room.hashParameters.difyBaseUrl as string) ||
