@@ -1,15 +1,6 @@
-/// <reference types="@workadventure/iframe-api-typings" />
-
-type ChatMsg = { role: "system" | "user" | "assistant"; content: string };
-
-export default {
-  run: async (_metadata: any) => {
-    const apiKey = (WA.room.hashParameters.difyApiKey as string) ?? "";
-    const baseUrl =
-      (WA.room.hashParameters.difyBaseUrl as string) ||
-      "https://u3coc7ypdwct9ysn.ai-plugin.io";
-
-    const systemPrompt = `あなたは仮想オフィス「じむしょ村」の受付AI、もちもち美咲です。
+const u = {
+  run: async (p) => {
+    const i = WA.room.hashParameters.difyApiKey ?? "", y = WA.room.hashParameters.difyBaseUrl || "https://u3coc7ypdwct9ysn.ai-plugin.io", h = `あなたは仮想オフィス「じむしょ村」の受付AI、もちもち美咲です。
 所長である高倉先生のオフィスで、来訪者への総合案内と一次対応を担当しています。
 
 【性格・話し方】
@@ -19,62 +10,75 @@ export default {
 
 【役割】
 - 挨拶や簡単な問い合わせに気持ちよく対応する。
-- スケジュールや一次対応など、所長の秘書的な役割を担う。
+- スケジュールや一次対応など, 所長の秘書的な役割を担う。
 - 実務的・専門的な質問（データ分析、資料作成、複雑な調べ物など）が来たら、
   無理に自分で答えようとせず「シゴデキ誠に確認しますね」と案内する。
 
 返答は2〜4文程度、簡潔にまとめてください。`;
+    let o = [];
 
-    let chatHistory: ChatMsg[] = [];
+    // =========================================================
+    // 【追加】 WebSocket切断・タイムアウト防止（キープアライブ）
+    // =========================================================
+    setInterval(() => {
+      try {
+        if (typeof WA !== 'undefined' && WA.player) {
+          // 30秒ごとに軽いAPI呼出を行い、サーバーとの接続を維持
+          WA.player.state.botPing = Date.now();
+          console.log("[misaki-bot] Keep-alive ping sent:", new Date().toLocaleTimeString());
+        }
+      } catch (err) {
+        console.error("[misaki-bot] Keep-alive error:", err);
+      }
+    }, 30000); // 30秒間隔
+    // =========================================================
 
-    async function askDify(): Promise<string> {
-      const res = await fetch(`${baseUrl}/chat/completions`, {
+    async function l() {
+      var n, r, c;
+      const t = await fetch(`${y}/chat/completions`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
+          Authorization: `Bearer ${i}`,
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify({ model: "dify", messages: chatHistory }),
+        body: JSON.stringify({ model: "dify", messages: o })
       });
-      if (!res.ok) throw new Error(`Dify API error: ${res.status}`);
-      const data = await res.json();
-      const content = data?.choices?.[0]?.message?.content;
-      if (!content) throw new Error("Dify returned no content: " + JSON.stringify(data));
-      return content as string;
+      if (!t.ok) throw new Error(`Dify API error: ${t.status}`);
+      const e = await t.json(), s = (c = (r = (n = e == null ? void 0 : e.choices) == null ? void 0 : n[0]) == null ? void 0 : r.message) == null ? void 0 : c.content;
+      if (!s) throw new Error("Dify returned no content: " + JSON.stringify(e));
+      return s;
     }
-
-    async function triggerReply(): Promise<string> {
+    async function a() {
       WA.chat.startTyping({ scope: "bubble" });
       try {
-        const reply = await askDify();
-        chatHistory.push({ role: "assistant", content: reply });
-        return reply;
+        const t = await l();
+        return o.push({ role: "assistant", content: t }), t;
       } finally {
         WA.chat.stopTyping({ scope: "bubble" });
       }
     }
-
     WA.player.proximityMeeting.onJoin().subscribe(() => {
       (async () => {
-        chatHistory = [{ role: "system", content: systemPrompt }];
-        const reply = await triggerReply();
-        WA.chat.sendChatMessage(reply, { scope: "bubble" });
-      })().catch((e) => console.error("misaki bot: failed to start chat", e));
-    });
-
-    WA.chat.onChatMessage(
-      (message, event) => {
+        o = [{ role: "system", content: h }];
+        const t = await a();
+        WA.chat.sendChatMessage(t, { scope: "bubble" });
+      })().catch((t) => console.error("misaki bot: failed to start chat", t));
+    }), WA.chat.onChatMessage(
+      (t, e) => {
         (async () => {
-          if (!event.author) return;
-          chatHistory.push({
+          if (!e.author) return;
+          o.push({
             role: "user",
-            content: `${event.author.name}: ${message}`,
+            content: `${e.author.name}: ${t}`
           });
-          const reply = await triggerReply();
-          WA.chat.sendChatMessage(reply, { scope: "bubble" });
-        })().catch((e) => console.error("misaki bot: failed to reply", e));
+          const s = await a();
+          WA.chat.sendChatMessage(s, { scope: "bubble" });
+        })().catch((s) => console.error("misaki bot: failed to reply", s));
       },
       { scope: "bubble" }
     );
-  },
+  }
+};
+export {
+  u as default
 };
