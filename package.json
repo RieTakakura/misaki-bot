@@ -1,18 +1,13 @@
-{
-  "name": "bot-starter-kit",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "start": "npx serve dist -p 10000 --cors"
-  },
-  "devDependencies": {
-    "@types/node": "^20.14.8",
-    "@workadventure/iframe-api-typings": "^1.19.7",
-    "typescript": "^5.2.2",
-    "vite": "^5.3.1"
+import { defineConfig } from 'vite';
+import { resolve } from 'path';
+
+export default defineConfig({
+  build: {
+    lib: {
+      entry: resolve(__dirname, 'src/main.ts'),
+      name: 'MyBot',
+      fileName: () => 'bot.js', // ★出力ファイル名を「bot.js」に固定
+      formats: ['es']
+    }
   }
-}
+});
