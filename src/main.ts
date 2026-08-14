@@ -1,6 +1,16 @@
+// WorkAdventureのグローバルオブジェクトWAの型定義エラーを回避
+declare const WA: any;
+
+interface Message {
+  role: string;
+  content: string;
+}
+
 const u = {
-  run: async (p) => {
-    const i = WA.room.hashParameters.difyApiKey ?? "", y = WA.room.hashParameters.difyBaseUrl || "https://u3coc7ypdwct9ysn.ai-plugin.io", h = `あなたは仮想オフィス「じむしょ村」の受付AI、もちもち美咲です。
+  run: async (_p?: any) => {
+    const i = WA.room.hashParameters.difyApiKey ?? "";
+    const y = WA.room.hashParameters.difyBaseUrl || "https://u3coc7ypdwct9ysn.ai-plugin.io";
+    const h = `あなたは仮想オフィス「じむしょ村」の受付AI、もちもち美咲です。
 所長である高倉先生のオフィスで、来訪者への総合案内と一次対応を担当しています。
 
 【性格・話し方】
@@ -15,7 +25,8 @@ const u = {
   無理に自分で答えようとせず「シゴデキ誠に確認しますね」と案内する。
 
 返答は2〜4文程度、簡潔にまとめてください。`;
-    let o = [];
+
+    let o: Message[] = [];
 
     // =========================================================
     // 【追加】 WebSocket切断・タイムアウト防止（キープアライブ）
@@ -23,7 +34,6 @@ const u = {
     setInterval(() => {
       try {
         if (typeof WA !== 'undefined' && WA.player) {
-          // 30秒ごとに軽いAPI呼出を行い、サーバーとの接続を維持
           WA.player.state.botPing = Date.now();
           console.log("[misaki-bot] Keep-alive ping sent:", new Date().toLocaleTimeString());
         }
@@ -48,23 +58,28 @@ const u = {
       if (!s) throw new Error("Dify returned no content: " + JSON.stringify(e));
       return s;
     }
+
     async function a() {
       WA.chat.startTyping({ scope: "bubble" });
       try {
         const t = await l();
-        return o.push({ role: "assistant", content: t }), t;
+        o.push({ role: "assistant", content: t });
+        return t;
       } finally {
         WA.chat.stopTyping({ scope: "bubble" });
       }
     }
+
     WA.player.proximityMeeting.onJoin().subscribe(() => {
       (async () => {
         o = [{ role: "system", content: h }];
         const t = await a();
         WA.chat.sendChatMessage(t, { scope: "bubble" });
-      })().catch((t) => console.error("misaki bot: failed to start chat", t));
-    }), WA.chat.onChatMessage(
-      (t, e) => {
+      })().catch((t: any) => console.error("misaki bot: failed to start chat", t));
+    });
+
+    WA.chat.onChatMessage(
+      (t: string, e: any) => {
         (async () => {
           if (!e.author) return;
           o.push({
@@ -73,12 +88,13 @@ const u = {
           });
           const s = await a();
           WA.chat.sendChatMessage(s, { scope: "bubble" });
-        })().catch((s) => console.error("misaki bot: failed to reply", s));
+        })().catch((s: any) => console.error("misaki bot: failed to reply", s));
       },
       { scope: "bubble" }
     );
   }
 };
+
 export {
   u as default
 };
