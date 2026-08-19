@@ -1,1 +1,16 @@
-
+{
+  "name": "bot-starter-kit",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc && vite build",
+    "dev": "vite",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.8",
+    "@workadventure/iframe-api-typings": "^1.19.7",
+    "typescript": "^5.2.2",
+    "vite": "^5.3.1"
+  }
+}
