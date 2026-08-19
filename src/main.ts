@@ -28,21 +28,6 @@ const u = {
 
     let o: Message[] = [];
 
-    // =========================================================
-    // 【追加】 WebSocket切断・タイムアウト防止（キープアライブ）
-    // =========================================================
-    setInterval(() => {
-      try {
-        if (typeof WA !== 'undefined' && WA.player) {
-          WA.player.state.botPing = Date.now();
-          console.log("[misaki-bot] Keep-alive ping sent:", new Date().toLocaleTimeString());
-        }
-      } catch (err) {
-        console.error("[misaki-bot] Keep-alive error:", err);
-      }
-    }, 30000); // 30秒間隔
-    // =========================================================
-
     async function l() {
       var n, r, c;
       const t = await fetch(`${y}/chat/completions`, {
